@@ -1,0 +1,8 @@
+{
+  "name": "design 1",
+  "description": "A claymorphism-styled pharmacy application featuring AI-powered prescription analysis and a virtual health assistant.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
