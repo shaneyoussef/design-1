@@ -1,11 +1,27 @@
 import React, { useState } from 'react';
-import { ClayCard, ClayButton, ClayInput, ClaySelect } from './components/ClayComponents';
+import { ClayCard, ClayButton } from './components/ClayComponents';
 import { ChatAssistant } from './components/ChatAssistant';
-import { PrescriptionUpload } from './components/PrescriptionUpload';
-import { Phone, MapPin, Mail, Clock, ShieldCheck, Truck, Recycle } from 'lucide-react';
+import { RefillForm } from './components/RefillForm';
+import { UploadForm } from './components/UploadForm';
+import { TransferForm } from './components/TransferForm';
+import { Phone, MapPin, Mail, Clock, ShieldCheck, Truck, Recycle, ChevronRight } from 'lucide-react';
+
+type Page = 'home' | 'refill' | 'upload' | 'transfer';
 
 const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<Page>('home');
+
+  // Render form pages
+  if (currentPage === 'refill') {
+    return <RefillForm onBack={() => setCurrentPage('home')} />;
+  }
+  if (currentPage === 'upload') {
+    return <UploadForm onBack={() => setCurrentPage('home')} />;
+  }
+  if (currentPage === 'transfer') {
+    return <TransferForm onBack={() => setCurrentPage('home')} />;
+  }
 
   return (
     <div className="min-h-screen font-sans selection:bg-blue-200 selection:text-blue-900 overflow-x-hidden">
@@ -72,49 +88,55 @@ const App: React.FC = () => {
         </ClayCard>
       </section>
 
-      {/* Main Services Grid */}
+      {/* Main Services Grid - Clickable Cards */}
       <section id="services" className="p-4 md:p-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* Refill Card */}
-          <ClayCard className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-6 shadow-inner text-blue-600">
+          {/* Refill Card - Clickable */}
+          <ClayCard 
+            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            onClick={() => setCurrentPage('refill')}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-6 shadow-inner text-blue-600 group-hover:scale-110 transition-transform">
                 <Recycle />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-gray-700">Refill Prescription</h3>
-            <p className="mb-6 text-gray-500">Running low? Refill your medications quickly and easily with just your Rx number.</p>
-            <div className="space-y-4 mt-auto">
-              <ClayInput placeholder="Full Name" />
-              <ClayInput placeholder="Prescription #" />
-              <ClaySelect options={['Pick up at Store', 'Free Delivery']} />
-              <ClayButton className="w-full py-3">Submit Refill</ClayButton>
+            <p className="mb-6 text-gray-500 flex-grow">Running low? Refill your existing medications quickly and easily online or by phone.</p>
+            <div className="flex items-center text-blue-600 font-bold group-hover:gap-3 gap-2 transition-all">
+              <span>Get Started</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </div>
           </ClayCard>
 
-          {/* Upload Card */}
-          <ClayCard className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-transform duration-300 border-blue-200/50">
-            <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center mb-6 shadow-inner text-purple-600">
+          {/* Upload Card - Clickable */}
+          <ClayCard 
+            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 border-blue-200/50 cursor-pointer group"
+            onClick={() => setCurrentPage('upload')}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center mb-6 shadow-inner text-purple-600 group-hover:scale-110 transition-transform">
                 <ShieldCheck />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-700">New Prescription</h3>
-            <p className="mb-6 text-gray-500">Snap a photo of your new script. Our AI will help extract details for faster processing.</p>
-            <div className="mt-auto">
-                <PrescriptionUpload />
+            <h3 className="text-2xl font-bold mb-4 text-gray-700">Submit New Prescription</h3>
+            <p className="mb-6 text-gray-500 flex-grow">Have a new script? Upload a photo or scan of your new prescription to get started.</p>
+            <div className="flex items-center text-purple-600 font-bold group-hover:gap-3 gap-2 transition-all">
+              <span>Upload Now</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </div>
           </ClayCard>
 
-          {/* Transfer Card */}
-          <ClayCard className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-transform duration-300">
-             <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center mb-6 shadow-inner text-green-600">
+          {/* Transfer Card - Clickable */}
+          <ClayCard 
+            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+            onClick={() => setCurrentPage('transfer')}
+          >
+             <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center mb-6 shadow-inner text-green-600 group-hover:scale-110 transition-transform">
                 <Truck />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-700">Transfer Profile</h3>
-            <p className="mb-6 text-gray-500">Move your records to Medixly Pharmacy. We handle the communication for you.</p>
-            <div className="space-y-4 mt-auto">
-              <ClayInput placeholder="Current Pharmacy Name" />
-              <ClayInput placeholder="Patient Name" />
-              <ClayInput placeholder="Phone Number" type="tel" />
-              <ClayButton className="w-full py-3">Start Transfer</ClayButton>
+            <h3 className="text-2xl font-bold mb-4 text-gray-700">Transfer Prescription</h3>
+            <p className="mb-6 text-gray-500 flex-grow">Transfer your prescription from another pharmacy to Old Park Pharmacy. We handle everything for you.</p>
+            <div className="flex items-center text-green-600 font-bold group-hover:gap-3 gap-2 transition-all">
+              <span>Start Transfer</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </div>
           </ClayCard>
 
@@ -142,7 +164,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <ClayCard className="p-10 relative overflow-hidden group">
+                <ClayCard className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform">
                     <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-red-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
                     <h3 className="text-3xl font-bold text-gray-800 mb-2">Minor Ailment Clinic</h3>
                     <p className="text-gray-500 text-lg mb-6">Skip the walk-in clinic wait. Pharmacist assessments available.</p>
@@ -154,7 +176,7 @@ const App: React.FC = () => {
                     <ClayButton className="w-full md:w-auto px-8">Book Assessment</ClayButton>
                 </ClayCard>
 
-                <ClayCard className="p-10 relative overflow-hidden group">
+                <ClayCard className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform">
                      <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-teal-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
                     <h3 className="text-3xl font-bold text-gray-800 mb-2">Vaccine Clinic</h3>
                     <p className="text-gray-500 text-lg mb-6">Stay protected year-round. Walk-ins welcome during clinic hours.</p>
@@ -170,7 +192,7 @@ const App: React.FC = () => {
                 </ClayCard>
             </div>
 
-            <div className="mt-24 text-center">
+            <div id="about" className="mt-24 text-center">
                 <h3 className="text-3xl font-bold text-gray-700">About Medixly Pharmacy</h3>
                 <p className="max-w-3xl mx-auto mt-8 text-xl italic text-gray-500 leading-relaxed">
                     "Located at 10 Denarius Cres, Richmond Hill, Toronto, Ontario, we are more than just a drug store. We are a soft pillar of support for the community, dedicated to accessible healthcare and personal pharmacist consultations."
@@ -207,7 +229,11 @@ const App: React.FC = () => {
             <div className="bg-white/40 p-6 rounded-[30px] border border-white/50">
                 <h5 className="font-bold text-lg mb-4 text-gray-700">Quick Message</h5>
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                    <ClayInput placeholder="Your Email" type="email" />
+                    <input 
+                      className="bg-clay-bg rounded-[15px] shadow-[inset_6px_6px_12px_#d1d9e6,inset_-6px_-6px_12px_#ffffff] border-none p-4 w-full outline-none text-clay-text placeholder-gray-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                      placeholder="Your Email" 
+                      type="email" 
+                    />
                     <textarea 
                          className="bg-clay-bg rounded-[15px] shadow-[inset_6px_6px_12px_#d1d9e6,inset_-6px_-6px_12px_#ffffff] border-none p-4 w-full outline-none text-clay-text placeholder-gray-400 min-h-[100px] resize-none focus:ring-2 focus:ring-blue-100"
                          placeholder="How can we help?"
@@ -216,8 +242,13 @@ const App: React.FC = () => {
                 </form>
             </div>
         </ClayCard>
-        <div className="text-center mt-12 text-gray-400 text-sm font-medium">
-            © {new Date().getFullYear()} Medixly Pharmacy. Designed with Care.
+        <div className="max-w-7xl mx-auto mt-8 flex justify-between items-center">
+          <div className="text-gray-400 text-sm font-medium">
+              © {new Date().getFullYear()} Medixly Pharmacy. Designed with Care.
+          </div>
+          <a href="#" className="text-gray-400 text-sm font-medium hover:text-blue-500 transition-colors">
+            Pharmacist Access
+          </a>
         </div>
       </footer>
 
