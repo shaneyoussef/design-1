@@ -4,9 +4,11 @@ import { ChatAssistant } from './components/ChatAssistant';
 import { RefillForm } from './components/RefillForm';
 import { UploadForm } from './components/UploadForm';
 import { TransferForm } from './components/TransferForm';
-import { Phone, MapPin, Mail, Clock, ShieldCheck, Truck, Recycle, ChevronRight } from 'lucide-react';
+import { VaccineBooking } from './components/VaccineBooking';
+import { AdminDashboard } from './components/AdminDashboard';
+import { Phone, MapPin, Mail, Clock, ShieldCheck, Truck, Recycle, ChevronRight, Syringe } from 'lucide-react';
 
-type Page = 'home' | 'refill' | 'upload' | 'transfer';
+type Page = 'home' | 'refill' | 'upload' | 'transfer' | 'vaccine-booking' | 'admin';
 
 const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,6 +23,12 @@ const App: React.FC = () => {
   }
   if (currentPage === 'transfer') {
     return <TransferForm onBack={() => setCurrentPage('home')} />;
+  }
+  if (currentPage === 'vaccine-booking') {
+    return <VaccineBooking onBack={() => setCurrentPage('home')} />;
+  }
+  if (currentPage === 'admin') {
+    return <AdminDashboard onBack={() => setCurrentPage('home')} />;
   }
 
   return (
@@ -81,8 +89,13 @@ const App: React.FC = () => {
                     Call Now: 416-731-3400
                 </ClayButton>
              </a>
-             <ClayButton variant="secondary" className="px-10 py-4 text-xl">
-                 Book Appointment
+             <ClayButton 
+               variant="secondary" 
+               className="px-10 py-4 text-xl"
+               onClick={() => setCurrentPage('vaccine-booking')}
+             >
+                 <Syringe className="w-5 h-5 mr-3" />
+                 Book Vaccine
              </ClayButton>
           </div>
         </ClayCard>
@@ -176,19 +189,23 @@ const App: React.FC = () => {
                     <ClayButton className="w-full md:w-auto px-8">Book Assessment</ClayButton>
                 </ClayCard>
 
-                <ClayCard className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform">
+                <ClayCard 
+                  className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform"
+                  onClick={() => setCurrentPage('vaccine-booking')}
+                >
                      <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-teal-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
                     <h3 className="text-3xl font-bold text-gray-800 mb-2">Vaccine Clinic</h3>
-                    <p className="text-gray-500 text-lg mb-6">Stay protected year-round. Walk-ins welcome during clinic hours.</p>
+                    <p className="text-gray-500 text-lg mb-6">Stay protected year-round. Book your vaccine appointment online.</p>
                      <ul className="space-y-2 text-gray-600 mb-8">
-                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>Flu Shots</li>
-                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>COVID-19 Boosters</li>
+                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>Flu Shots (Standard & High Dose)</li>
+                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>COVID-19 Vaccines (Pfizer & Moderna)</li>
                         <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>Travel Vaccines</li>
                     </ul>
-                    <div className="flex items-center gap-2 text-sm font-bold text-gray-500 bg-gray-100 p-3 rounded-xl w-fit">
-                        <Clock className="w-4 h-4" />
-                        Weekdays 3pm - 6pm
-                    </div>
+                    <ClayButton className="w-full md:w-auto px-8 group">
+                        <Syringe className="w-4 h-4 mr-2" />
+                        Book Vaccine Now
+                        <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </ClayButton>
                 </ClayCard>
             </div>
 
@@ -246,9 +263,12 @@ const App: React.FC = () => {
           <div className="text-gray-400 text-sm font-medium">
               © {new Date().getFullYear()} Medixly Pharmacy. Designed with Care.
           </div>
-          <a href="#" className="text-gray-400 text-sm font-medium hover:text-blue-500 transition-colors">
+          <button 
+            onClick={() => setCurrentPage('admin')}
+            className="text-gray-400 text-sm font-medium hover:text-blue-500 transition-colors"
+          >
             Pharmacist Access
-          </a>
+          </button>
         </div>
       </footer>
 
