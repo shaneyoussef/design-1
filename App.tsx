@@ -1,282 +1,295 @@
-import React, { useState } from 'react';
-import { ClayCard, ClayButton } from './components/ClayComponents';
-import { ChatAssistant } from './components/ChatAssistant';
-import { RefillForm } from './components/RefillForm';
-import { UploadForm } from './components/UploadForm';
-import { TransferForm } from './components/TransferForm';
-import { VaccineBooking } from './components/VaccineBooking';
-import { AdminDashboard } from './components/AdminDashboard';
-import { Phone, MapPin, Mail, Clock, ShieldCheck, Truck, Recycle, ChevronRight, Syringe } from 'lucide-react';
+import { useState } from 'react';
+import { Printer } from 'lucide-react';
+import { GraphiteCheckbox, GraphiteInput, Section } from './components/UI';
 
-type Page = 'home' | 'refill' | 'upload' | 'transfer' | 'vaccine-booking' | 'admin';
+export default function App() {
+  const [patientType, setPatientType] = useState<'new' | 'existing'>('new');
+  
+  // History State
+  const [history, setHistory] = useState({
+    allergy: { yes: false, nka: false },
+    prescriptions: { yes: false, no: false },
+    otc: { yes: false, no: false },
+    pregnant: { yes: false, no: false },
+    kidney: { yes: false, no: false },
+  });
 
-const App: React.FC = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState<Page>('home');
+  // Info State
+  const [info, setInfo] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    postalCode: '',
+    healthCard: '',
+    coverage: ''
+  });
 
-  // Render form pages
-  if (currentPage === 'refill') {
-    return <RefillForm onBack={() => setCurrentPage('home')} />;
-  }
-  if (currentPage === 'upload') {
-    return <UploadForm onBack={() => setCurrentPage('home')} />;
-  }
-  if (currentPage === 'transfer') {
-    return <TransferForm onBack={() => setCurrentPage('home')} />;
-  }
-  if (currentPage === 'vaccine-booking') {
-    return <VaccineBooking onBack={() => setCurrentPage('home')} />;
-  }
-  if (currentPage === 'admin') {
-    return <AdminDashboard onBack={() => setCurrentPage('home')} />;
-  }
+  // New Rx State
+  const [newRx, setNewRx] = useState({
+    indication: '',
+    changeDescription: ''
+  });
+
+  // Refill State
+  const [refill, setRefill] = useState({
+    compliant: false,
+    effective: false,
+    concern: false,
+    changes: false,
+    sideEffects: false,
+    notes: ''
+  });
+
+  // Review State
+  const [review, setReview] = useState({
+    dose: { correct: false, no: false },
+    interactions: { yes: false, no: false },
+    duration: { yes: false, no: false },
+    drp: { yes: false, no: false },
+    pharmacistName: ''
+  });
+  
+  // Handlers for printing
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Helper for mutually exclusive toggles in History
+  const toggleHistory = (category: keyof typeof history, field: string) => {
+    setHistory(prev => {
+        const cat = prev[category] as Record<string, boolean>;
+        // If clicking the one that is already checked, uncheck it.
+        // If clicking a new one, uncheck others in the group.
+        const isCurrentlyChecked = cat[field];
+        const newCat = Object.keys(cat).reduce((acc, key) => {
+            acc[key] = key === field ? !isCurrentlyChecked : false;
+            return acc;
+        }, {} as Record<string, boolean>);
+        return { ...prev, [category]: newCat };
+    });
+  };
+
+  // Helper for mutually exclusive toggles in Review
+  const toggleReview = (category: keyof Omit<typeof review, 'pharmacistName'>, field: string) => {
+    setReview(prev => {
+        const cat = prev[category] as Record<string, boolean>;
+        const isCurrentlyChecked = cat[field];
+        const newCat = Object.keys(cat).reduce((acc, key) => {
+            acc[key] = key === field ? !isCurrentlyChecked : false;
+            return acc;
+        }, {} as Record<string, boolean>);
+        return { ...prev, [category]: newCat };
+    });
+  };
 
   return (
-    <div className="min-h-screen font-sans selection:bg-blue-200 selection:text-blue-900 overflow-x-hidden">
+    <div className="min-h-screen bg-paper-100 text-graphite-900 relative selection:bg-graphite-900 selection:text-paper-100">
       
-      {/* Header */}
-      <header className="p-4 md:p-6 sticky top-0 z-40 pointer-events-none">
-        <nav className="clay-card pointer-events-auto bg-clay-bg rounded-[35px] shadow-[12px_12px_24px_#d1d9e6,-12px_-12px_24px_#ffffff] flex justify-between items-center px-6 md:px-8 py-4 max-w-7xl mx-auto">
-          <div className="text-2xl font-bold text-blue-600 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm">M</div>
-            Medixly
-          </div>
-          
-          <div className="hidden md:flex gap-8 font-bold text-gray-500">
-            <a href="#" className="hover:text-blue-500 transition-colors">Home</a>
-            <a href="#services" className="hover:text-blue-500 transition-colors">Prescription</a>
-            <a href="#clinic" className="hover:text-blue-500 transition-colors">Clinic</a>
-            <a href="#about" className="hover:text-blue-500 transition-colors">Services</a>
-            <a href="#contact" className="hover:text-blue-500 transition-colors">Contact</a>
-          </div>
+      {/* Noise Texture Overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-multiply"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+        }}
+      />
 
-          <ClayButton className="md:hidden !p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-             <div className="space-y-1">
-                <div className="w-6 h-0.5 bg-blue-500"></div>
-                <div className="w-6 h-0.5 bg-blue-500"></div>
-                <div className="w-6 h-0.5 bg-blue-500"></div>
-             </div>
-          </ClayButton>
-        </nav>
+      {/* Main Grid Layout */}
+      <div className="max-w-[1200px] mx-auto border-l border-r border-graphite-900/10 min-h-screen bg-paper-100 shadow-2xl flex flex-col">
         
-        {mobileMenuOpen && (
-            <div className="absolute top-24 left-4 right-4 z-50 pointer-events-auto">
-                <ClayCard className="flex flex-col gap-4 p-6 items-center font-bold text-gray-600">
-                    <a href="#" onClick={() => setMobileMenuOpen(false)}>Home</a>
-                    <a href="#services" onClick={() => setMobileMenuOpen(false)}>Prescription</a>
-                    <a href="#clinic" onClick={() => setMobileMenuOpen(false)}>Clinic</a>
-                    <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
-                </ClayCard>
-            </div>
-        )}
-      </header>
-
-      {/* Hero Section */}
-      <section className="px-4 md:px-12 py-6">
-        <ClayCard className="p-8 md:p-24 text-center max-w-7xl mx-auto relative overflow-hidden">
-          {/* Decorative Elements */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200 opacity-20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4"></div>
-
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-blue-800 relative z-10">Wellness, Sculpted for You.</h1>
-          <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-gray-600 leading-relaxed relative z-10">
-            Experience a pharmacy that feels as soft and supportive as your community. We combine modern AI-enhanced care with a gentle, personal touch.
-          </p>
-          <div className="flex flex-col md:flex-row gap-6 justify-center items-center relative z-10">
-             <a href="tel:416-731-3400">
-                <ClayButton className="px-10 py-4 text-xl group">
-                    <Phone className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform" />
-                    Call Now: 416-731-3400
-                </ClayButton>
-             </a>
-             <ClayButton 
-               variant="secondary" 
-               className="px-10 py-4 text-xl"
-               onClick={() => setCurrentPage('vaccine-booking')}
-             >
-                 <Syringe className="w-5 h-5 mr-3" />
-                 Book Vaccine
-             </ClayButton>
+        {/* Header */}
+        <header className="border-b border-graphite-900/10 p-8 flex justify-between items-end sticky top-0 bg-paper-100/95 backdrop-blur-sm z-40 print:static print:border-b-2 print:border-black">
+          <div>
+            <div className="font-mono text-xs text-graphite-400 uppercase tracking-widest mb-2">Form OP-0492 // Intake</div>
+            <h1 className="font-sans text-3xl font-extrabold uppercase tracking-[0.2em] text-graphite-900">
+              Old Park Pharmacy
+            </h1>
           </div>
-        </ClayCard>
-      </section>
-
-      {/* Main Services Grid - Clickable Cards */}
-      <section id="services" className="p-4 md:p-12 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* Refill Card - Clickable */}
-          <ClayCard 
-            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
-            onClick={() => setCurrentPage('refill')}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-6 shadow-inner text-blue-600 group-hover:scale-110 transition-transform">
-                <Recycle />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-700">Refill Prescription</h3>
-            <p className="mb-6 text-gray-500 flex-grow">Running low? Refill your existing medications quickly and easily online or by phone.</p>
-            <div className="flex items-center text-blue-600 font-bold group-hover:gap-3 gap-2 transition-all">
-              <span>Get Started</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </ClayCard>
-
-          {/* Upload Card - Clickable */}
-          <ClayCard 
-            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 border-blue-200/50 cursor-pointer group"
-            onClick={() => setCurrentPage('upload')}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center mb-6 shadow-inner text-purple-600 group-hover:scale-110 transition-transform">
-                <ShieldCheck />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-700">Submit New Prescription</h3>
-            <p className="mb-6 text-gray-500 flex-grow">Have a new script? Upload a photo or scan of your new prescription to get started.</p>
-            <div className="flex items-center text-purple-600 font-bold group-hover:gap-3 gap-2 transition-all">
-              <span>Upload Now</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </ClayCard>
-
-          {/* Transfer Card - Clickable */}
-          <ClayCard 
-            className="p-8 flex flex-col h-full transform hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
-            onClick={() => setCurrentPage('transfer')}
-          >
-             <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center mb-6 shadow-inner text-green-600 group-hover:scale-110 transition-transform">
-                <Truck />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-700">Transfer Prescription</h3>
-            <p className="mb-6 text-gray-500 flex-grow">Transfer your prescription from another pharmacy to Old Park Pharmacy. We handle everything for you.</p>
-            <div className="flex items-center text-green-600 font-bold group-hover:gap-3 gap-2 transition-all">
-              <span>Start Transfer</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </ClayCard>
-
-        </div>
-      </section>
-
-      {/* Info & Clinic Section */}
-      <section id="clinic" className="bg-white/50 rounded-t-[60px] md:rounded-t-[100px] mt-12 pb-24 border-t border-white shadow-[0_-10px_40px_rgba(255,255,255,0.8)]">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-20">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-blue-800">Complete Care Services</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-                <ClayCard className="p-6 text-center hover:scale-105 transition-transform cursor-default">
-                    <Truck className="w-8 h-8 mx-auto mb-3 text-blue-500" />
-                    <h4 className="font-bold text-lg">Free Delivery</h4>
-                </ClayCard>
-                <ClayCard className="p-6 text-center hover:scale-105 transition-transform cursor-default">
-                    <Recycle className="w-8 h-8 mx-auto mb-3 text-green-500" />
-                    <h4 className="font-bold text-lg">Medication Disposal</h4>
-                </ClayCard>
-                <ClayCard className="p-6 text-center hover:scale-105 transition-transform cursor-default">
-                    <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-purple-500" />
-                    <h4 className="font-bold text-lg">Senior Discounts</h4>
-                </ClayCard>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <ClayCard className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform">
-                    <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-red-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">Minor Ailment Clinic</h3>
-                    <p className="text-gray-500 text-lg mb-6">Skip the walk-in clinic wait. Pharmacist assessments available.</p>
-                    <ul className="space-y-2 text-gray-600 mb-8">
-                        <li className="flex items-center"><div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>UTIs & Pink Eye</li>
-                        <li className="flex items-center"><div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>Skin Rashes & Insect Bites</li>
-                        <li className="flex items-center"><div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>Allergic Rhinitis</li>
-                    </ul>
-                    <ClayButton className="w-full md:w-auto px-8">Book Assessment</ClayButton>
-                </ClayCard>
-
-                <ClayCard 
-                  className="p-10 relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform"
-                  onClick={() => setCurrentPage('vaccine-booking')}
+          <div className="flex items-center gap-6 no-print">
+             <div className="flex bg-paper-200 p-1 rounded-sm border border-graphite-900/10">
+                <button
+                    onClick={() => setPatientType('new')}
+                    className={`px-4 py-2 font-mono text-xs uppercase tracking-wider transition-all duration-300 ${patientType === 'new' ? 'bg-graphite-900 text-white shadow-md' : 'text-graphite-400 hover:text-graphite-900'}`}
                 >
-                     <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-teal-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity"></div>
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">Vaccine Clinic</h3>
-                    <p className="text-gray-500 text-lg mb-6">Stay protected year-round. Book your vaccine appointment online.</p>
-                     <ul className="space-y-2 text-gray-600 mb-8">
-                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>Flu Shots (Standard & High Dose)</li>
-                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>COVID-19 Vaccines (Pfizer & Moderna)</li>
-                        <li className="flex items-center"><div className="w-2 h-2 bg-teal-400 rounded-full mr-2"></div>Travel Vaccines</li>
-                    </ul>
-                    <ClayButton className="w-full md:w-auto px-8 group">
-                        <Syringe className="w-4 h-4 mr-2" />
-                        Book Vaccine Now
-                        <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </ClayButton>
-                </ClayCard>
+                    New Patient
+                </button>
+                <button
+                    onClick={() => setPatientType('existing')}
+                    className={`px-4 py-2 font-mono text-xs uppercase tracking-wider transition-all duration-300 ${patientType === 'existing' ? 'bg-graphite-900 text-white shadow-md' : 'text-graphite-400 hover:text-graphite-900'}`}
+                >
+                    Existing Patient
+                </button>
+             </div>
+
+            <button 
+              onClick={handlePrint}
+              className="group flex items-center gap-3 bg-white border border-graphite-900/20 px-6 py-3 hover:bg-graphite-900 hover:text-white transition-all duration-300"
+            >
+              <span className="font-mono text-xs uppercase tracking-widest">Print Form</span>
+              <Printer size={16} />
+            </button>
+          </div>
+          
+          {/* Print-only Header Status */}
+          <div className="hidden print:block font-mono text-sm uppercase">
+             Status: <span className="font-bold border border-black px-2 py-1">{patientType} Patient</span>
+          </div>
+        </header>
+
+        {/* Content Body */}
+        <main className="flex-1 p-8 grid grid-cols-1 md:grid-cols-12 gap-8 print:block">
+          
+          {/* Left Column (History & Info) - Disabled if Existing */}
+          <div className="md:col-span-6 space-y-8 print:w-1/2 print:float-left print:pr-4">
+            
+            {/* Patient Status Checkboxes (Visual Only for Print) */}
+            <div className="hidden print:flex gap-12 mb-8 border-b border-black pb-4">
+               <div className="flex items-center gap-2">
+                 <div className={`w-4 h-4 border border-black ${patientType === 'new' ? 'bg-black' : ''}`}></div>
+                 <span className="font-mono text-sm uppercase">New Patient</span>
+               </div>
+               <div className="flex items-center gap-2">
+                 <div className={`w-4 h-4 border border-black ${patientType === 'existing' ? 'bg-black' : ''}`}></div>
+                 <span className="font-mono text-sm uppercase">Existing Patient</span>
+               </div>
             </div>
 
-            <div id="about" className="mt-24 text-center">
-                <h3 className="text-3xl font-bold text-gray-700">About Medixly Pharmacy</h3>
-                <p className="max-w-3xl mx-auto mt-8 text-xl italic text-gray-500 leading-relaxed">
-                    "Located at 10 Denarius Cres, Richmond Hill, Toronto, Ontario, we are more than just a drug store. We are a soft pillar of support for the community, dedicated to accessible healthcare and personal pharmacist consultations."
-                </p>
-            </div>
-        </div>
-      </section>
+            <Section 
+                title="History" 
+                disabled={patientType === 'existing'}
+                className="h-fit"
+            >
+                <div className="grid grid-cols-[120px_1fr] gap-y-6 items-center">
+                    <span className="font-mono text-sm uppercase">Allergy</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={history.allergy.yes} onChange={() => toggleHistory('allergy', 'yes')} disabled={patientType === 'existing'} />
+                        <GraphiteCheckbox label="NKA" checked={history.allergy.nka} onChange={() => toggleHistory('allergy', 'nka')} disabled={patientType === 'existing'} />
+                    </div>
 
-      {/* Footer */}
-      <footer id="contact" className="p-4 md:p-12 bg-[#e8eff5]">
-        <ClayCard className="max-w-7xl mx-auto p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-12 bg-[#f0f4f8]">
-            <div className="space-y-6">
-                <h4 className="text-2xl font-bold text-blue-800">Connect With Us</h4>
-                <div className="space-y-4 text-gray-600 font-medium">
-                    <div className="flex items-start gap-4">
-                        <MapPin className="w-6 h-6 text-blue-500 shrink-0" />
-                        <p>10 Denarius Cres, Richmond Hill, Toronto, ON</p>
+                    <span className="font-mono text-sm uppercase">Prescriptions</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={history.prescriptions.yes} onChange={() => toggleHistory('prescriptions', 'yes')} disabled={patientType === 'existing'} />
+                        <GraphiteCheckbox label="No" checked={history.prescriptions.no} onChange={() => toggleHistory('prescriptions', 'no')} disabled={patientType === 'existing'} />
                     </div>
-                    <div className="flex items-start gap-4">
-                        <Clock className="w-6 h-6 text-blue-500 shrink-0" />
-                        <p>Open All Week: 9 am - 6 pm</p>
+
+                    <span className="font-mono text-sm uppercase">OTC / Herbal</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={history.otc.yes} onChange={() => toggleHistory('otc', 'yes')} disabled={patientType === 'existing'} />
+                        <GraphiteCheckbox label="No" checked={history.otc.no} onChange={() => toggleHistory('otc', 'no')} disabled={patientType === 'existing'} />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Phone className="w-6 h-6 text-blue-500 shrink-0" />
-                        <p>Tel: 416-731-3400 <span className="mx-2 text-gray-300">|</span> Fax: 416-731-3400</p>
+
+                    <span className="font-mono text-sm uppercase">Pregnant / BF</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={history.pregnant.yes} onChange={() => toggleHistory('pregnant', 'yes')} disabled={patientType === 'existing'} />
+                        <GraphiteCheckbox label="No" checked={history.pregnant.no} onChange={() => toggleHistory('pregnant', 'no')} disabled={patientType === 'existing'} />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Mail className="w-6 h-6 text-blue-500 shrink-0" />
-                        <p>shenoudamesseha@gmail.com</p>
+
+                    <span className="font-mono text-sm uppercase">Kidney / Liver</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={history.kidney.yes} onChange={() => toggleHistory('kidney', 'yes')} disabled={patientType === 'existing'} />
+                        <GraphiteCheckbox label="No" checked={history.kidney.no} onChange={() => toggleHistory('kidney', 'no')} disabled={patientType === 'existing'} />
                     </div>
                 </div>
-            </div>
-            
-            <div className="bg-white/40 p-6 rounded-[30px] border border-white/50">
-                <h5 className="font-bold text-lg mb-4 text-gray-700">Quick Message</h5>
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                    <input 
-                      className="bg-clay-bg rounded-[15px] shadow-[inset_6px_6px_12px_#d1d9e6,inset_-6px_-6px_12px_#ffffff] border-none p-4 w-full outline-none text-clay-text placeholder-gray-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                      placeholder="Your Email" 
-                      type="email" 
-                    />
-                    <textarea 
-                         className="bg-clay-bg rounded-[15px] shadow-[inset_6px_6px_12px_#d1d9e6,inset_-6px_-6px_12px_#ffffff] border-none p-4 w-full outline-none text-clay-text placeholder-gray-400 min-h-[100px] resize-none focus:ring-2 focus:ring-blue-100"
-                         placeholder="How can we help?"
-                    ></textarea>
-                    <ClayButton className="w-full py-3">Send Message</ClayButton>
-                </form>
-            </div>
-        </ClayCard>
-        <div className="max-w-7xl mx-auto mt-8 flex justify-between items-center">
-          <div className="text-gray-400 text-sm font-medium">
-              © {new Date().getFullYear()} Medixly Pharmacy. Designed with Care.
-          </div>
-          <button 
-            onClick={() => setCurrentPage('admin')}
-            className="text-gray-400 text-sm font-medium hover:text-blue-500 transition-colors"
-          >
-            Pharmacist Access
-          </button>
-        </div>
-      </footer>
+            </Section>
 
-      {/* AI Assistant */}
-      <ChatAssistant />
-      
+            <Section 
+                title="Info" 
+                disabled={patientType === 'existing'}
+            >
+                <div className="grid grid-cols-2 gap-6">
+                    <GraphiteInput label="First Name" disabled={patientType === 'existing'} value={info.firstName} onChange={e => setInfo({...info, firstName: e.target.value})} />
+                    <GraphiteInput label="Last Name" disabled={patientType === 'existing'} value={info.lastName} onChange={e => setInfo({...info, lastName: e.target.value})} />
+                </div>
+                <GraphiteInput label="Address" disabled={patientType === 'existing'} value={info.address} onChange={e => setInfo({...info, address: e.target.value})} />
+                <div className="grid grid-cols-2 gap-6">
+                    <GraphiteInput label="Postal Code" disabled={patientType === 'existing'} value={info.postalCode} onChange={e => setInfo({...info, postalCode: e.target.value})} />
+                    <GraphiteInput label="Health Card #" disabled={patientType === 'existing'} value={info.healthCard} onChange={e => setInfo({...info, healthCard: e.target.value})} />
+                </div>
+                <GraphiteInput label="Additional Coverage" disabled={patientType === 'existing'} value={info.coverage} onChange={e => setInfo({...info, coverage: e.target.value})} />
+            </Section>
+          </div>
+
+          {/* Right Column (Prescriptions & Pharmacist) - Always Enabled */}
+          <div className="md:col-span-6 space-y-8 print:w-1/2 print:float-right print:pl-4">
+            
+            <Section title="New Prescription / Change">
+                <GraphiteInput label="Indication" value={newRx.indication} onChange={e => setNewRx({...newRx, indication: e.target.value})} />
+                <GraphiteInput label="Change Description" className="mt-4" value={newRx.changeDescription} onChange={e => setNewRx({...newRx, changeDescription: e.target.value})} />
+            </Section>
+
+            <Section title="Refill Prescription">
+                 <div className="grid grid-cols-2 gap-y-4">
+                    <GraphiteCheckbox label="Compliant" checked={refill.compliant} onChange={() => setRefill({...refill, compliant: !refill.compliant})} />
+                    <GraphiteCheckbox label="Effective" checked={refill.effective} onChange={() => setRefill({...refill, effective: !refill.effective})} />
+                    
+                    <GraphiteCheckbox label="Concern" checked={refill.concern} onChange={() => setRefill({...refill, concern: !refill.concern})} />
+                    <GraphiteCheckbox label="Changes" checked={refill.changes} onChange={() => setRefill({...refill, changes: !refill.changes})} />
+                    
+                    <GraphiteCheckbox label="Side Effects" checked={refill.sideEffects} onChange={() => setRefill({...refill, sideEffects: !refill.sideEffects})} />
+                 </div>
+                 
+                 <div className="mt-6 pt-6 border-t border-graphite-900/10">
+                    <GraphiteInput label="Detailed Notes" placeholder="Enter notes here..." value={refill.notes} onChange={e => setRefill({...refill, notes: e.target.value})} />
+                 </div>
+            </Section>
+
+            <Section title="Pharmacist Review" className="bg-paper-200/30">
+                <div className="grid grid-cols-[140px_1fr] gap-y-4 items-center">
+                    <span className="font-mono text-sm uppercase font-bold">Dose</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Correct" checked={review.dose.correct} onChange={() => toggleReview('dose', 'correct')} />
+                        <GraphiteCheckbox label="No" checked={review.dose.no} onChange={() => toggleReview('dose', 'no')} />
+                    </div>
+
+                    <span className="font-mono text-sm uppercase font-bold">Interactions</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={review.interactions.yes} onChange={() => toggleReview('interactions', 'yes')} />
+                        <GraphiteCheckbox label="No" checked={review.interactions.no} onChange={() => toggleReview('interactions', 'no')} />
+                    </div>
+
+                    <span className="font-mono text-sm uppercase font-bold">Duration</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={review.duration.yes} onChange={() => toggleReview('duration', 'yes')} />
+                        <GraphiteCheckbox label="No" checked={review.duration.no} onChange={() => toggleReview('duration', 'no')} />
+                    </div>
+
+                    <span className="font-mono text-sm uppercase font-bold">DRP</span>
+                    <div className="flex gap-6">
+                        <GraphiteCheckbox label="Yes" checked={review.drp.yes} onChange={() => toggleReview('drp', 'yes')} />
+                        <GraphiteCheckbox label="No" checked={review.drp.no} onChange={() => toggleReview('drp', 'no')} />
+                    </div>
+                </div>
+
+                <div className="mt-8 space-y-8">
+                    <div className="border border-graphite-900/20 h-24 p-2">
+                        <p className="font-mono text-[10px] text-graphite-400 uppercase tracking-wider mb-2">Clinical Notes</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8 items-end pt-4">
+                         <GraphiteInput label="Pharmacist Name" value={review.pharmacistName} onChange={e => setReview({...review, pharmacistName: e.target.value})} />
+                         <div className="border-b border-graphite-900/20 h-10 flex items-end pb-1">
+                            <span className="font-mono text-[10px] text-graphite-400 uppercase tracking-wider block w-full">Sign / Date</span>
+                         </div>
+                    </div>
+                </div>
+            </Section>
+
+          </div>
+
+          <div className="print:clear-both"></div>
+        </main>
+        
+        {/* Footer */}
+        <footer className="border-t border-graphite-900/10 p-8 flex justify-between items-center bg-paper-100 text-graphite-400">
+           <div className="font-mono text-[10px] uppercase tracking-widest">
+                Confidential Medical Record
+           </div>
+           <div className="font-mono text-[10px] uppercase tracking-widest">
+                Page 01 / 01
+           </div>
+        </footer>
+
+      </div>
     </div>
   );
-};
-
-export default App;
+}

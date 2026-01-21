@@ -1,8 +1,5 @@
 {
-  "name": "design 1",
-  "description": "A claymorphism-styled pharmacy application featuring AI-powered prescription analysis and a virtual health assistant.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
+  "name": "Old Park Pharmacy Intake",
+  "description": "Digital intake form with graphite aesthetic. Features conditional logic for new vs. existing patients and print-ready layout.",
+  "requestFramePermissions": []
 }
